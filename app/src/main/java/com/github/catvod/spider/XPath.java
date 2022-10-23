@@ -280,6 +280,9 @@ public class XPath extends Spider {
 
             ArrayList<String> playList = new ArrayList<>();
             List<JXNode> urlListNodes = doc.selN(rule.getDetailUrlNode());
+            JSONObject result = new JSONObject();
+            JSONArray list = new JSONArray();
+            boolean isMagnet = false;
             for (int i = 0; i < urlListNodes.size(); i++) {
                 List<JXNode> urlNodes = urlListNodes.get(i).sel(rule.getDetailUrlSubNode());
                 List<String> vodItems = new ArrayList<>();
@@ -289,12 +292,18 @@ public class XPath extends Spider {
                     String id = urlNodes.get(j).selOne(rule.getDetailUrlId()).asString().trim();
                     id = rule.getDetailUrlIdR(id);
                     vodItems.add(name + "$" + id);
+                    if (id.startsWith("magnet")) {
+//                        vod.put("vod_id", id);
+                        isMagnet = true;
+                        break;
+                    }
                 }
                 // 排除播放列表为空的播放源
                 if (vodItems.size() == 0 && playFrom.size() > i) {
                     playFrom.set(i, "");
                 }
                 playList.add(TextUtils.join("#", vodItems));
+                if (isMagnet) break;
             }
             // 排除播放列表为空的播放源
             for (int i = playFrom.size() - 1; i >= 0; i--) {
@@ -316,8 +325,6 @@ public class XPath extends Spider {
 
             detailContentExt(webContent, vod);
 
-            JSONObject result = new JSONObject();
-            JSONArray list = new JSONArray();
             list.put(vod);
             result.put("list", list);
             return result.toString();
